@@ -1,5 +1,6 @@
 .gradle/
 .idea/
+.tools/
 build/
 local.properties
 captures/
