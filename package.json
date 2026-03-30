@@ -1,0 +1,42 @@
+{
+  "name": "young-fun-damn-app",
+  "main": "expo-router/entry",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "eslint ./src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@expo-google-fonts/cormorant-garamond": "^0.4.1",
+    "@expo-google-fonts/noto-sans-sc": "^0.4.3",
+    "@expo-google-fonts/noto-serif-sc": "^0.4.3",
+    "expo": "~55.0.9",
+    "expo-constants": "~55.0.9",
+    "expo-font": "~55.0.4",
+    "expo-image": "~55.0.6",
+    "expo-linear-gradient": "~55.0.9",
+    "expo-linking": "~55.0.9",
+    "expo-router": "~55.0.8",
+    "expo-splash-screen": "~55.0.13",
+    "expo-status-bar": "~55.0.4",
+    "expo-system-ui": "~55.0.11",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-native": "0.83.4",
+    "react-native-gesture-handler": "~2.30.0",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "react-native-web": "~0.21.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~55.0.0",
+    "typescript": "~5.9.2"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Young Fun Damn",
+    "slug": "young-fun-damn",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "youngfundamn",
+    "userInterfaceStyle": "light",
+    "web": {
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
