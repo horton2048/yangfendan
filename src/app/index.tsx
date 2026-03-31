@@ -1,67 +1,61 @@
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useRef, useState } from 'react';
-import {
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  ScrollView,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { OnboardingScreen } from '@/components/onboarding-screen';
-import { onboardingSteps, type LanguageCode } from '@/data/onboarding';
-import { colors } from '@/theme/tokens';
+import { AppButton, SectionLabel } from '@/components/app-primitives';
+import { PhoneStatus } from '@/components/phone-status';
+import { screenCopy, authOptions } from '@/data/app-content';
+import { colors, fontFamilies, radii } from '@/theme/tokens';
 
-export default function OnboardingRoute() {
-  const { width } = useWindowDimensions();
-  const scrollRef = useRef<ScrollView>(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>('zh');
+const heroImage = require('../../assets/v12-exports/WNOTq.png');
 
-  const handleMomentumEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const nextPage = Math.round(event.nativeEvent.contentOffset.x / width);
-    setCurrentPage(nextPage);
-  };
+export default function EntryRoute() {
+  const [contact, setContact] = useState('');
 
-  const handlePrimaryAction = () => {
-    if (currentPage === onboardingSteps.length - 1) {
-      router.push({
-        pathname: '/home',
-        params: { language: selectedLanguage },
-      });
-      return;
-    }
-
-    const nextPage = currentPage + 1;
-    scrollRef.current?.scrollTo({ x: nextPage * width, animated: true });
-    setCurrentPage(nextPage);
+  const handleContinue = () => {
+    router.push({
+      pathname: '/auth/code',
+      params: {
+        contact: contact.trim() || '138 **** 2048',
+      },
+    } as never);
   };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
-      <View pointerEvents="none" style={styles.backgroundBlobLeft} />
-      <View pointerEvents="none" style={styles.backgroundBlobRight} />
+      <ScrollView bounces={false} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <PhoneStatus />
 
-      <ScrollView
-        ref={scrollRef}
-        bounces={false}
-        horizontal
-        onMomentumScrollEnd={handleMomentumEnd}
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        style={styles.pager}>
-        {onboardingSteps.map((step) => (
-          <View key={step.key} style={[styles.page, { width }]}>
-            <OnboardingScreen
-              onPrimaryAction={handlePrimaryAction}
-              onSelectLanguage={setSelectedLanguage}
-              selectedLanguage={selectedLanguage}
-              step={step}
-            />
+        <View style={styles.header}>
+          <Text style={styles.brand}>羊粪蛋</Text>
+          <Text style={styles.title}>{screenCopy.auth.title}</Text>
+          <Text style={styles.subtitle}>{screenCopy.auth.subtitle}</Text>
+        </View>
+
+        <Image contentFit="cover" source={heroImage} style={styles.hero} transition={150} />
+
+        <View style={styles.card}>
+          <SectionLabel>手机号或邮箱</SectionLabel>
+          <TextInput
+            onChangeText={setContact}
+            placeholder="输入手机号或邮箱"
+            placeholderTextColor={colors.textMuted}
+            style={styles.input}
+            value={contact}
+          />
+          <AppButton label="继续" onPress={handleContinue} style={styles.fullButton} />
+        </View>
+
+        <View style={styles.altBlock}>
+          <SectionLabel>其他方式</SectionLabel>
+          <View style={styles.altList}>
+            {authOptions.map((option) => (
+              <AppButton key={option} label={option} onPress={handleContinue} style={styles.fullButton} tone="outline" />
+            ))}
           </View>
-        ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -72,30 +66,62 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     flex: 1,
   },
-  pager: {
-    flex: 1,
+  content: {
+    paddingBottom: 24,
+    paddingHorizontal: 20,
   },
-  page: {
-    flex: 1,
+  header: {
+    gap: 8,
+    marginBottom: 16,
   },
-  backgroundBlobLeft: {
-    backgroundColor: '#ECDCC5',
-    borderRadius: 220,
+  brand: {
+    color: colors.textMuted,
+    fontFamily: fontFamilies.label,
+    fontSize: 13,
+  },
+  title: {
+    color: colors.text,
+    fontFamily: fontFamilies.heading,
+    fontSize: 38,
+    lineHeight: 50,
+  },
+  subtitle: {
+    color: colors.textMuted,
+    fontFamily: fontFamilies.body,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  hero: {
+    borderRadius: radii.hero,
     height: 220,
-    left: -110,
-    opacity: 0.6,
-    position: 'absolute',
-    top: 80,
-    width: 220,
+    marginBottom: 16,
+    width: '100%',
   },
-  backgroundBlobRight: {
-    backgroundColor: '#F1E5D3',
-    borderRadius: 180,
-    height: 180,
-    opacity: 0.9,
-    position: 'absolute',
-    right: -70,
-    top: 280,
-    width: 180,
+  card: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.panel,
+    borderWidth: 1,
+    gap: 12,
+    marginBottom: 16,
+    padding: 14,
+  },
+  input: {
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radii.input,
+    color: colors.text,
+    fontFamily: fontFamilies.body,
+    fontSize: 15,
+    minHeight: 56,
+    paddingHorizontal: 16,
+  },
+  altBlock: {
+    gap: 10,
+  },
+  altList: {
+    gap: 10,
+  },
+  fullButton: {
+    width: '100%',
   },
 });

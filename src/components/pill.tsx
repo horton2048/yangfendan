@@ -3,9 +3,9 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 import { colors, fontFamilies, radii } from '@/theme/tokens';
 
 type PillProps = {
-  label: string;
   active?: boolean;
   displayFont?: boolean;
+  label: string;
   onPress?: () => void;
 };
 
@@ -41,26 +41,28 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   active: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.terracotta,
   },
   inactive: {
     backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
   },
   pressed: {
-    opacity: 0.85,
+    opacity: 0.86,
   },
   label: {
-    fontFamily: fontFamilies.sansSemiBold,
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 13,
     lineHeight: 18,
   },
   displayLabel: {
-    fontFamily: fontFamilies.displaySemiBold,
+    fontFamily: fontFamilies.brandSemiBold,
     fontSize: 16,
     lineHeight: 18,
   },
   activeLabel: {
-    color: colors.white,
+    color: colors.textInverse,
   },
   inactiveLabel: {
     color: colors.textMuted,

@@ -1,346 +1,264 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import type { LanguageCode, OnboardingStep, StackLayer } from '@/data/onboarding';
+import { AppButton, AppChip } from '@/components/app-primitives';
 import { PhoneStatus } from '@/components/phone-status';
-import { Pill } from '@/components/pill';
-import { colors, fontFamilies, radii, shadows } from '@/theme/tokens';
+import type { OnboardingStep } from '@/data/onboarding';
+import { colors, fontFamilies, radii } from '@/theme/tokens';
 
 type OnboardingScreenProps = {
-  step: OnboardingStep;
-  selectedLanguage: LanguageCode;
-  onSelectLanguage: (language: LanguageCode) => void;
+  index: number;
   onPrimaryAction: () => void;
+  onSkip?: () => void;
+  step: OnboardingStep;
+  total: number;
 };
 
 export function OnboardingScreen({
-  step,
-  selectedLanguage,
-  onSelectLanguage,
+  index,
   onPrimaryAction,
+  onSkip,
+  step,
+  total,
 }: OnboardingScreenProps) {
   return (
-    <ScrollView
-      bounces={false}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}>
+    <ScrollView bounces={false} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <PhoneStatus />
 
-      <View style={styles.heroWrapper}>{renderHero(step)}</View>
+      <View style={styles.heroShell}>
+        {step.key === 'feed' ? (
+          <LinearGradient colors={['#EFE5D6', colors.background]} style={styles.logoHero}>
+            <Image contentFit="contain" source={step.hero} style={styles.logoPanel} transition={150} />
+          </LinearGradient>
+        ) : (
+          <Image contentFit="cover" source={step.hero} style={styles.photoHero} transition={150} />
+        )}
 
-      <View style={styles.copyBlock}>
+        {step.showSkip ? (
+          <Pressable onPress={onSkip} style={styles.skipPill}>
+            <Text style={styles.skipText}>跳过</Text>
+          </Pressable>
+        ) : null}
+      </View>
+
+      <View style={styles.panel}>
+        <Text style={styles.stepLabel}>{step.stepLabel}</Text>
         <Text style={styles.title}>{step.title}</Text>
-        <Text style={styles.subtitle}>{step.subtitle}</Text>
-      </View>
+        <Text style={styles.body}>{step.body}</Text>
 
-      <View style={styles.pillRow}>
-        {step.pills.map((pill) => {
-          const active =
-            step.key === 'language'
-              ? pill.id === selectedLanguage
-              : Boolean(pill.highlighted);
-
-          return (
-            <Pill
-              key={pill.label}
-              active={active}
-              displayFont={pill.displayFont}
-              label={pill.label}
-              onPress={
-                step.key === 'language' && pill.id
-                  ? () => onSelectLanguage(pill.id as LanguageCode)
-                  : undefined
-              }
-            />
-          );
-        })}
-      </View>
-
-      <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>{step.card.title}</Text>
-        <Text style={styles.infoBody}>{step.card.body}</Text>
-      </View>
-
-      <Text style={styles.note}>{step.note}</Text>
-
-      <Pressable onPress={onPrimaryAction} style={styles.actionButton}>
-        <LinearGradient
-          colors={[colors.accentSoft, colors.accent]}
-          end={{ x: 1, y: 0.5 }}
-          start={{ x: 0, y: 0.5 }}
-          style={styles.actionButtonFill}>
-          <Text style={styles.actionLabel}>{step.ctaLabel}</Text>
-        </LinearGradient>
-      </Pressable>
-
-      <Text style={styles.pageLabel}>{step.pageLabel}</Text>
-    </ScrollView>
-  );
-}
-
-function renderHero(step: OnboardingStep) {
-  switch (step.hero.kind) {
-    case 'photo':
-      return (
-        <Image
-          contentFit="cover"
-          source={step.hero.image}
-          style={styles.photoHero}
-          transition={150}
-        />
-      );
-    case 'stack':
-      return (
-        <View style={styles.stackHero}>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{step.hero.badge}</Text>
+        {step.key === 'belief' && step.quote ? (
+          <View style={styles.quoteCard}>
+            <Text style={styles.quoteText}>{step.quote}</Text>
           </View>
-          {step.hero.layers?.map((layer) => (
-            <LayerCard key={layer.title} layer={layer} />
+        ) : null}
+
+        {step.key === 'agent' && step.quote ? (
+          <View style={styles.agentPreview}>
+            {step.subtitle ? <Text style={styles.agentEyebrow}>{step.subtitle}</Text> : null}
+            <Text style={styles.agentBody}>{step.quote}</Text>
+          </View>
+        ) : null}
+
+        {step.key === 'feed' ? (
+          <View style={styles.feedPreview}>
+            <Text style={styles.previewLabel}>你会先看到</Text>
+            <View style={styles.previewChipRow}>
+              {step.previewChips?.map((chip, chipIndex) => (
+                <AppChip
+                  key={chip}
+                  compact
+                  label={chip}
+                  selected={chipIndex === 0}
+                  style={chipIndex === 0 ? undefined : styles.previewChip}
+                />
+              ))}
+            </View>
+            {step.footnote ? <Text style={styles.feedPreviewBody}>{step.footnote}</Text> : null}
+          </View>
+        ) : null}
+
+        {step.key === 'agent' && step.previewChips?.length ? (
+          <View style={styles.chipRow}>
+            {step.previewChips.map((chip) => (
+              <AppChip key={chip} label={chip} />
+            ))}
+          </View>
+        ) : null}
+
+        <View style={styles.dots}>
+          {Array.from({ length: total }).map((_, dotIndex) => (
+            <View
+              key={dotIndex}
+              style={[
+                styles.dot,
+                dotIndex === index ? styles.dotActive : null,
+              ]}
+            />
           ))}
         </View>
-      );
-    case 'brand':
-      return (
-        <View style={styles.brandHero}>
-          <View style={styles.brandBlocks}>
-            <View style={[styles.brandBlock, styles.goldBlock]} />
-            <View style={[styles.brandBlock, styles.softAccentBlock]} />
-            <View style={[styles.brandBlock, styles.creamBlock]} />
-            <View style={styles.stemBlock} />
-          </View>
-          <View style={styles.brandCard}>
-            <Text style={styles.brandTitle}>{step.hero.brandTitle}</Text>
-            <Text style={styles.brandSubtitle}>{step.hero.brandSubtitle}</Text>
-            <Text style={styles.brandNote}>{step.hero.brandNote}</Text>
-          </View>
-        </View>
-      );
-  }
-}
 
-function LayerCard({ layer }: { layer: StackLayer }) {
-  const cardStyle =
-    layer.tone === 'accent'
-      ? styles.layerAccent
-      : layer.tone === 'muted'
-        ? styles.layerMuted
-        : styles.layerLight;
-
-  const titleStyle = layer.tone === 'accent' ? styles.layerAccentTitle : styles.layerTitle;
-  const bodyStyle = layer.tone === 'accent' ? styles.layerAccentBody : styles.layerBody;
-
-  return (
-    <View style={[styles.layerCard, cardStyle]}>
-      <Text style={titleStyle}>{layer.title}</Text>
-      <Text style={bodyStyle}>{layer.body}</Text>
-    </View>
+        <AppButton label={step.ctaLabel} onPress={onPrimaryAction} style={styles.fullButton} />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingBottom: 8,
+    paddingBottom: 28,
+  },
+  heroShell: {
+    marginBottom: -18,
+    position: 'relative',
+  },
+  photoHero: {
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    height: 420,
+    width: '100%',
+  },
+  logoHero: {
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    height: 420,
+    justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    width: '100%',
   },
-  heroWrapper: {
-    marginBottom: 20,
+  logoPanel: {
+    backgroundColor: colors.white,
+    borderRadius: 34,
+    height: 284,
+    width: '100%',
   },
-  copyBlock: {
-    gap: 8,
-    marginBottom: 18,
+  skipPill: {
+    alignItems: 'center',
+    backgroundColor: '#FBF8F2CC',
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: '#FFFFFF66',
+    height: 34,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 24,
+    top: 16,
+    width: 74,
+  },
+  skipText: {
+    color: colors.text,
+    fontFamily: fontFamilies.bodySemiBold,
+    fontSize: 13,
+  },
+  panel: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    gap: 14,
+    minHeight: 476,
+    paddingHorizontal: 24,
+    paddingTop: 26,
+    paddingBottom: 28,
+  },
+  stepLabel: {
+    color: colors.textMuted,
+    fontFamily: fontFamilies.label,
+    fontSize: 11,
+    letterSpacing: 0.4,
   },
   title: {
     color: colors.text,
-    fontFamily: fontFamilies.serifBold,
-    fontSize: 30,
-    lineHeight: 42,
+    fontFamily: fontFamilies.heading,
+    fontSize: 36,
+    lineHeight: 48,
   },
-  subtitle: {
+  body: {
     color: colors.textMuted,
-    fontFamily: fontFamilies.sansMedium,
-    fontSize: 14,
-    lineHeight: 22,
+    fontFamily: fontFamilies.body,
+    fontSize: 15,
+    lineHeight: 24,
   },
-  pillRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 18,
-  },
-  infoCard: {
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radii.card,
-    gap: 8,
-    marginBottom: 16,
-    padding: 18,
-    ...shadows,
-  },
-  infoTitle: {
-    color: colors.text,
-    fontFamily: fontFamilies.serifBold,
-    fontSize: 20,
-    lineHeight: 30,
-  },
-  infoBody: {
-    color: colors.textMuted,
-    fontFamily: fontFamilies.sansMedium,
-    fontSize: 14,
-    lineHeight: 23,
-  },
-  note: {
-    color: colors.textSubtle,
-    fontFamily: fontFamilies.sansMedium,
-    fontSize: 13,
-    lineHeight: 21,
-    marginBottom: 18,
-  },
-  actionButton: {
-    borderRadius: radii.chip,
-    marginBottom: 14,
-    overflow: 'hidden',
-  },
-  actionButtonFill: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 54,
-    paddingHorizontal: 24,
-  },
-  actionLabel: {
-    color: colors.white,
-    fontFamily: fontFamilies.sansBold,
-    fontSize: 16,
-  },
-  pageLabel: {
-    color: '#B99A7D',
-    fontFamily: fontFamilies.displaySemiBold,
-    fontSize: 22,
-    lineHeight: 28,
-    textAlign: 'center',
-  },
-  photoHero: {
-    borderRadius: radii.hero,
-    height: 320,
-    width: '100%',
-  },
-  stackHero: {
-    backgroundColor: colors.surfaceTint,
-    borderRadius: radii.hero,
-    gap: 12,
-    padding: 16,
-  },
-  badge: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.accent,
-    borderRadius: radii.chip,
+  quoteCard: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 24,
+    borderWidth: 1,
     paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  badgeText: {
-    color: colors.white,
-    fontFamily: fontFamilies.sansBold,
-    fontSize: 12,
-  },
-  layerCard: {
-    borderRadius: 22,
-    gap: 6,
-    paddingHorizontal: 16,
     paddingVertical: 14,
   },
-  layerLight: {
-    backgroundColor: colors.surface,
-  },
-  layerMuted: {
-    backgroundColor: colors.background,
-  },
-  layerAccent: {
-    backgroundColor: colors.accentSoft,
-  },
-  layerTitle: {
+  quoteText: {
     color: colors.text,
-    fontFamily: fontFamilies.serifBold,
-    fontSize: 18,
-    lineHeight: 26,
+    fontFamily: fontFamilies.bodySemiBold,
+    fontSize: 15,
+    lineHeight: 22,
   },
-  layerBody: {
-    color: colors.textMuted,
-    fontFamily: fontFamilies.sansMedium,
-    fontSize: 13,
-    lineHeight: 20,
-  },
-  layerAccentTitle: {
-    color: colors.white,
-    fontFamily: fontFamilies.serifBold,
-    fontSize: 18,
-    lineHeight: 26,
-  },
-  layerAccentBody: {
-    color: '#F6EBDD',
-    fontFamily: fontFamilies.sansMedium,
-    fontSize: 13,
-    lineHeight: 20,
-  },
-  brandHero: {
-    backgroundColor: colors.surfaceWarm,
-    borderRadius: radii.hero,
-    gap: 14,
-    padding: 18,
-  },
-  brandBlocks: {
-    flexDirection: 'row',
-    gap: 10,
-    height: 62,
-  },
-  brandBlock: {
-    borderRadius: 20,
-    flex: 1,
-  },
-  goldBlock: {
-    backgroundColor: colors.accentGold,
-  },
-  softAccentBlock: {
-    backgroundColor: colors.accentSoft,
-    flex: 1.45,
-  },
-  creamBlock: {
-    backgroundColor: '#F8ECD4',
-    flex: 1.15,
-  },
-  stemBlock: {
-    backgroundColor: colors.accent,
-    borderRadius: 18,
-    width: 20,
-  },
-  brandCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.card,
+  agentPreview: {
+    backgroundColor: colors.surfaceInverse,
+    borderRadius: 24,
     gap: 8,
-    padding: 18,
+    padding: 14,
   },
-  brandTitle: {
-    color: colors.text,
-    fontFamily: fontFamilies.displayBold,
-    fontSize: 30,
-    lineHeight: 34,
+  agentEyebrow: {
+    color: '#D6D0CA',
+    fontFamily: fontFamilies.label,
+    fontSize: 10,
+    letterSpacing: 0.4,
   },
-  brandSubtitle: {
-    color: colors.accent,
-    fontFamily: fontFamilies.serifBold,
-    fontSize: 18,
-    lineHeight: 28,
+  agentBody: {
+    color: colors.textInverse,
+    fontFamily: fontFamilies.body,
+    fontSize: 15,
+    lineHeight: 22,
   },
-  brandNote: {
+  chipRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  feedPreview: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 24,
+    borderWidth: 1,
+    gap: 8,
+    padding: 14,
+  },
+  previewLabel: {
     color: colors.textMuted,
-    fontFamily: fontFamilies.sansMedium,
-    fontSize: 13,
-    lineHeight: 20,
+    fontFamily: fontFamilies.label,
+    fontSize: 11,
+    letterSpacing: 0.4,
+  },
+  previewChipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  previewChip: {
+    backgroundColor: colors.surface,
+  },
+  feedPreviewBody: {
+    color: colors.textMuted,
+    fontFamily: fontFamilies.body,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  dots: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 2,
+  },
+  dot: {
+    backgroundColor: '#D8CBBB',
+    borderRadius: radii.chip,
+    height: 8,
+    width: 8,
+  },
+  dotActive: {
+    backgroundColor: colors.terracotta,
+    width: 24,
+  },
+  fullButton: {
+    width: '100%',
   },
 });
